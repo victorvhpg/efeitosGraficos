@@ -159,9 +159,7 @@ var efeitoGrafico = (function(requestAnimationFrame) {
 
         plasmaComBuffer: function(pixels, largura, altura, obj) {
             var t = Date.now() / 10;
-            var kx = largura / altura;
             for (var y = 0; y < altura; y++) {
-                var yy = y / altura - 0.5;
                 for (var x = 0; x < largura; x++) {
                     var posPixel = (y * largura + x) * 4;
                     var cor = obj.paleta[~~(obj.bufferPlasma[x][y] + t) % 256];
