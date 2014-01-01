@@ -1,7 +1,15 @@
 /*
  @victorvhpg
- https://github.com/victorvhpg/
+ https://github.com/victorvhpg/efeitosGraficos
+
+//===================================
+formulas de plasma foram baseadas em:
+http://lodev.org/cgtutor/plasma.html
+http://www.bidouille.org/prog/plasma
+//====================================
+
  */
+
 var efeitoGrafico = (function(requestAnimationFrame) {
     "use strict";
 
@@ -110,7 +118,6 @@ var efeitoGrafico = (function(requestAnimationFrame) {
             this.canvas.width = this.config.largura;
             this.ctx = this.canvas.getContext("2d");
             this.config.container.parentNode.replaceChild(this.canvas, this.config.container);
-
             this.loop();
             return this;
         }
@@ -166,7 +173,6 @@ var efeitoGrafico = (function(requestAnimationFrame) {
             }
         }
     };
-
 
     return efeitoGrafico;
 
