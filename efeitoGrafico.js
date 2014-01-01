@@ -84,9 +84,9 @@ var efeitoGrafico = (function(requestAnimationFrame) {
             var b = [
                 (128 + (128 * Math.sin(x / 16)) + 128 + (128 * Math.sin(y / 16))) / 2,
                 //===
-                (128.0 + (128.0 * Math.sin(x / 16.0)) + 128.0 + (128.0 * Math.sin(y / 32.0)) + 128.0 + (128.0 * Math.sin(Math.sqrt(((x - w / 2.0) * (x - w / 2.0) + (y - h / 2.0) * (y - h / 2.0))) / 8.0)) + 128.0 + (128.0 * Math.sin(Math.sqrt((x * x + y * y)) / 8.0))) / 4,
+                (128 + (128 * Math.sin(x / 16)) + 128 + (128 * Math.sin(y / 32.0)) + 128 + (128 * Math.sin(Math.sqrt(((x - w / 2) * (x - w / 2) + (y - h / 2) * (y - h / 2))) / 8)) + 128 + (128 * Math.sin(Math.sqrt((x * x + y * y)) / 8))) / 4,
                 //===
-                (128.0 + (128.0 * Math.sin(x / 16.0)) + 128.0 + (128.0 * Math.sin(y / 8.0)) + 128.0 + (128.0 * Math.sin((x + y) / 16.0)) + 128.0 + (128.0 * Math.sin(Math.sqrt((x * x + y * y)) / 8.0))) / 4
+                (128 + (128 * Math.sin(x / 16)) + 128 + (128 * Math.sin(y / 8)) + 128 + (128 * Math.sin((x + y) / 16)) + 128 + (128 * Math.sin(Math.sqrt((x * x + y * y)) / 8))) / 4
             ];
             return b[bufferPos];
         },
