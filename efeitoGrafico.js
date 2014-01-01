@@ -9,10 +9,10 @@ var efeitoGrafico = (function(requestAnimationFrame) {
         var config = {};
         configEnviada = configEnviada || {};
         for (var propriedade in configPadrao) {
-            if(!configPadrao.hasOwnProperty(propriedade)){
+            if (!configPadrao.hasOwnProperty(propriedade)) {
                 continue;
             }
-            config[propriedade] = configEnviada.hasOwnProperty(propriedade) ? configEnviada[propriedade] : configEnviada[propriedade];
+            config[propriedade] = configEnviada.hasOwnProperty(propriedade) ? configEnviada[propriedade] : configPadrao[propriedade];
         }
         return config;
     };
@@ -20,8 +20,19 @@ var efeitoGrafico = (function(requestAnimationFrame) {
     var efeitoGrafico = function(config) {
         this.canvas = null;
         this.ctx = null;
+        this.bufferPlasma = [];
+        this.paleta = [];
         this.config = _configurarPadrao(_config, config);
-
+        if (this.config.efeito === efeitoGrafico.efeitos.plasmaComBuffer) {
+            this.setBufferPlasma(this.config.posBuffer);
+            for (var i = 0; i < 256; i++) {
+                this.paleta[i] = {
+                    r: (128 + 128 * Math.sin(Math.PI * i / 32)),
+                    g: (128 + 128 * Math.sin(Math.PI * i / 64)),
+                    b: (128 + 128 * Math.sin(Math.PI * i / 128))
+                }
+            }
+        };
     };
 
     efeitoGrafico.criar = function(config) {
@@ -30,6 +41,7 @@ var efeitoGrafico = (function(requestAnimationFrame) {
 
     efeitoGrafico.efeitos = {
         plasma: "plasma",
+        plasmaComBuffer: "plasmaComBuffer",
         inverteCor: "inverteCor",
         tunel: "tunel",
         fogo: "fogo"
@@ -40,11 +52,36 @@ var efeitoGrafico = (function(requestAnimationFrame) {
         altura: 300,
         efeito: efeitoGrafico.efeitos.plasma,
         container: null,
-        img: null
+        img: null,
+        posBuffer:0
     };
 
     efeitoGrafico.prototype = {
         constructor: efeitoGrafico,
+
+        setBufferPlasma: function(bufferPos) {
+            var bufferPlasma = [];
+            var largura = this.config.largura;
+            var altura = this.config.altura;
+            for (var x = 0; x < largura; x++) {
+                bufferPlasma[x] = [];
+                for (var y = 0; y < altura; y++) {
+                    bufferPlasma[x][y] = this.valorBuffer(x, y, largura, altura, bufferPos);
+                }
+            }
+            this.bufferPlasma = bufferPlasma;
+        },
+
+        valorBuffer: function(x, y, w, h, bufferPos) {
+            var b = [
+                (128 + (128 * Math.sin(x / 16)) + 128 + (128 * Math.sin(y / 16))) / 2,
+                //===
+                (128.0 + (128.0 * Math.sin(x / 16.0)) + 128.0 + (128.0 * Math.sin(y / 32.0)) + 128.0 + (128.0 * Math.sin(Math.sqrt(((x - w / 2.0) * (x - w / 2.0) + (y - h / 2.0) * (y - h / 2.0))) / 8.0)) + 128.0 + (128.0 * Math.sin(Math.sqrt((x * x + y * y)) / 8.0))) / 4,
+                //===
+                (128.0 + (128.0 * Math.sin(x / 16.0)) + 128.0 + (128.0 * Math.sin(y / 8.0)) + 128.0 + (128.0 * Math.sin((x + y) / 16.0)) + 128.0 + (128.0 * Math.sin(Math.sqrt((x * x + y * y)) / 8.0))) / 4
+            ];
+            return b[bufferPos];
+        },
 
         anima: function() {
             var largura = this.ctx.canvas.width;
@@ -54,9 +91,7 @@ var efeitoGrafico = (function(requestAnimationFrame) {
             }
             var objImageData = this.ctx.getImageData(0, 0, largura, altura);
             var pixels = objImageData.data;
-            // this.ctx.clearRect(0, 0, largura, altura);
-
-            _efeitos[this.config.efeito](pixels, largura, altura);
+            _efeitos[this.config.efeito](pixels, largura, altura, this);
             this.ctx.putImageData(objImageData, 0, 0);
         },
 
@@ -75,6 +110,7 @@ var efeitoGrafico = (function(requestAnimationFrame) {
             this.canvas.width = this.config.largura;
             this.ctx = this.canvas.getContext("2d");
             this.config.container.parentNode.replaceChild(this.canvas, this.config.container);
+
             this.loop();
             return this;
         }
@@ -94,7 +130,7 @@ var efeitoGrafico = (function(requestAnimationFrame) {
         },
 
         plasma: function(pixels, largura, altura) {
-            var t = Date.now() * 0.003;
+            var t = Date.now() * 0.002;
             var kx = largura / altura;
             for (var y = 0; y < altura; y++) {
                 var yy = y / altura - 0.5;
@@ -106,9 +142,25 @@ var efeitoGrafico = (function(requestAnimationFrame) {
                     v += Math.sin(Math.sqrt(100 * (cx * cx + cy * cy) + 1) + t);
                     var posPixel = (y * largura + x) * 4;
                     v = v / 1.6;
-                    pixels[posPixel] = 255 * (0.5 + 0.5 * Math.sin(Math.PI * v));
-                    pixels[posPixel + 1] = 255 * (0.5 + 0.5 * Math.sin(Math.PI * v + 2 * Math.PI / 3));
-                    pixels[posPixel + 2] = 255 * (0.5 + 0.5 * Math.sin(Math.PI * v + 4 * Math.PI / 3));
+                    pixels[posPixel] = 255 * (0.5 + 0.7 * Math.sin(Math.PI * v));
+                    pixels[posPixel + 1] = 255 * (1.4 + 1.9 * Math.sin(Math.PI * v + 2 * Math.PI / 3));
+                    pixels[posPixel + 2] = 255 * (1.3 + 1.9 * Math.sin(Math.PI * v + 4 * Math.PI / 3));
+                    pixels[posPixel + 3] = 255;
+                }
+            }
+        },
+
+        plasmaComBuffer: function(pixels, largura, altura, obj) {
+            var t = Date.now() / 10;
+            var kx = largura / altura;
+            for (var y = 0; y < altura; y++) {
+                var yy = y / altura - 0.5;
+                for (var x = 0; x < largura; x++) {
+                    var posPixel = (y * largura + x) * 4;
+                    var cor = obj.paleta[~~(obj.bufferPlasma[x][y] + t) % 256];
+                    pixels[posPixel] = cor.r;
+                    pixels[posPixel + 1] = cor.g;
+                    pixels[posPixel + 2] = cor.b;
                     pixels[posPixel + 3] = 255;
                 }
             }
